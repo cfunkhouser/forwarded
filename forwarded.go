@@ -6,6 +6,32 @@ import (
 	"strings"
 )
 
+var determiner Determiner = xffDeterminer{}
+
+// By is the original user-facing interface which received this request, as
+// described by the headers.
+func By(h http.Header) string {
+	return determiner.By(h)
+}
+
+// For is the interface which originally made this request, as described by the
+// headers.
+func For(h http.Header) string {
+	return determiner.For(h)
+}
+
+// Host is the host for which the original request was made, as described by the
+// headers.
+func Host(h http.Header) string {
+	return determiner.Host(h)
+}
+
+// Proto is the protocol over which the original request was made, as described
+// by the headers.
+func Proto(h http.Header) string {
+	return determiner.Proto(h)
+}
+
 // Determiner of forwarding information about a request.
 type Determiner interface {
 	By(http.Header) string
