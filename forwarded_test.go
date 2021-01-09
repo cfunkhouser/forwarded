@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestXFFDeterminerBy(t *testing.T) {
+func TestXFFStrategyBy(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -47,16 +47,16 @@ func TestXFFDeterminerBy(t *testing.T) {
 			want: "1.1.1.1:8080",
 		},
 	} {
-		testDeterminer := &xffDeterminer{}
+		testStrategy := &xffStrategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.By(tc.header); got != tc.want {
+			if got := testStrategy.By(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestXFFDeterminerFor(t *testing.T) {
+func TestXFFStrategyFor(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -96,16 +96,16 @@ func TestXFFDeterminerFor(t *testing.T) {
 			want: "1.1.1.1:8080",
 		},
 	} {
-		testDeterminer := &xffDeterminer{}
+		testStrategy := &xffStrategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.For(tc.header); got != tc.want {
+			if got := testStrategy.For(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestXFFDeterminerHost(t *testing.T) {
+func TestXFFStrategyHost(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -145,16 +145,16 @@ func TestXFFDeterminerHost(t *testing.T) {
 			want: "[2606:4700:4700::1111]:8080",
 		},
 	} {
-		testDeterminer := &xffDeterminer{}
+		testStrategy := &xffStrategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.Host(tc.header); got != tc.want {
+			if got := testStrategy.Host(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestXFFDeterminerProto(t *testing.T) {
+func TestXFFStrategyProto(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -176,9 +176,9 @@ func TestXFFDeterminerProto(t *testing.T) {
 			want: "nonsense",
 		},
 	} {
-		testDeterminer := &xffDeterminer{}
+		testStrategy := &xffStrategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.Proto(tc.header); got != tc.want {
+			if got := testStrategy.Proto(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
@@ -215,7 +215,7 @@ func TestParseForwarded(t *testing.T) {
 	}
 }
 
-func TestRFC7239DeterminerBy(t *testing.T) {
+func TestRFC7239StrategyBy(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -242,16 +242,16 @@ func TestRFC7239DeterminerBy(t *testing.T) {
 			want: "203.0.113.60",
 		},
 	} {
-		testDeterminer := &rfc7239Determiner{}
+		testStrategy := &rfc7239Strategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.By(tc.header); got != tc.want {
+			if got := testStrategy.By(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestRFC7239DeterminerFor(t *testing.T) {
+func TestRFC7239StrategyFor(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -278,16 +278,16 @@ func TestRFC7239DeterminerFor(t *testing.T) {
 			want: "192.0.2.43",
 		},
 	} {
-		testDeterminer := &rfc7239Determiner{}
+		testStrategy := &rfc7239Strategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.For(tc.header); got != tc.want {
+			if got := testStrategy.For(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestRFC7239DeterminerHost(t *testing.T) {
+func TestRFC7239StrategyHost(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -314,16 +314,16 @@ func TestRFC7239DeterminerHost(t *testing.T) {
 			want: "example.com",
 		},
 	} {
-		testDeterminer := &rfc7239Determiner{}
+		testStrategy := &rfc7239Strategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.Host(tc.header); got != tc.want {
+			if got := testStrategy.Host(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})
 	}
 }
 
-func TestRFC7239DeterminerProto(t *testing.T) {
+func TestRFC7239StrategyProto(t *testing.T) {
 	for tn, tc := range map[string]struct {
 		want   string
 		header http.Header
@@ -350,9 +350,9 @@ func TestRFC7239DeterminerProto(t *testing.T) {
 			want: "http",
 		},
 	} {
-		testDeterminer := &rfc7239Determiner{}
+		testStrategy := &rfc7239Strategy{}
 		t.Run(tn, func(t *testing.T) {
-			if got := testDeterminer.Proto(tc.header); got != tc.want {
+			if got := testStrategy.Proto(tc.header); got != tc.want {
 				t.Errorf("got: %q want: %q", got, tc.want)
 			}
 		})

@@ -6,34 +6,34 @@ import (
 	"strings"
 )
 
-var determiner = DefaultStrategy()
+var strategy = DefaultStrategy()
 
 // By is the original user-facing interface which received this request, as
 // described by the headers.
 func By(h http.Header) string {
-	return determiner.By(h)
+	return strategy.By(h)
 }
 
 // For is the interface which originally made this request, as described by the
 // headers.
 func For(h http.Header) string {
-	return determiner.For(h)
+	return strategy.For(h)
 }
 
 // Host is the host for which the original request was made, as described by the
 // headers.
 func Host(h http.Header) string {
-	return determiner.Host(h)
+	return strategy.Host(h)
 }
 
 // Proto is the protocol over which the original request was made, as described
 // by the headers.
 func Proto(h http.Header) string {
-	return determiner.Proto(h)
+	return strategy.Proto(h)
 }
 
-// Determiner of forwarding information about a request.
-type Determiner interface {
+// Strategy for determining forwarding information about a request.
+type Strategy interface {
 	// By is the original user-facing interface which received this request, as
 	// described by the headers.
 	By(http.Header) string
@@ -51,9 +51,9 @@ type Determiner interface {
 	Proto(http.Header) string
 }
 
-// xffDeterminer uses the legacy X-Forwarded-$X headers to determine forwarding
+// xffStrategy uses the legacy X-Forwarded-$X headers to determine forwarding
 // information.
-type xffDeterminer struct{}
+type xffStrategy struct{}
 
 const (
 	headerXForwardedBy    = "X-Forwarded-By"
@@ -62,7 +62,7 @@ const (
 	headerXForwardedProto = "X-Forwarded-Proto"
 )
 
-func (xffDeterminer) By(h http.Header) (by string) {
+func (xffStrategy) By(h http.Header) (by string) {
 	if xfb := h.Get(headerXForwardedBy); xfb != "" {
 		xfbs := strings.Split(xfb, ",")
 		by = strings.TrimSpace(xfbs[0])
@@ -70,7 +70,7 @@ func (xffDeterminer) By(h http.Header) (by string) {
 	return
 }
 
-func (xffDeterminer) For(h http.Header) (f string) {
+func (xffStrategy) For(h http.Header) (f string) {
 	if xff := h.Get(headerXForwardedFor); xff != "" {
 		xffs := strings.Split(xff, ",")
 		f = strings.TrimSpace(xffs[0])
@@ -78,14 +78,14 @@ func (xffDeterminer) For(h http.Header) (f string) {
 	return
 }
 
-func (xffDeterminer) Host(h http.Header) (host string) {
+func (xffStrategy) Host(h http.Header) (host string) {
 	if xfh := h.Get(headerXForwardedHost); xfh != "" {
 		host = strings.TrimSpace(xfh)
 	}
 	return
 }
 
-func (xffDeterminer) Proto(h http.Header) (proto string) {
+func (xffStrategy) Proto(h http.Header) (proto string) {
 	if xfp := h.Get(headerXForwardedProto); xfp != "" {
 		proto = strings.TrimSpace(xfp)
 	}
@@ -93,13 +93,13 @@ func (xffDeterminer) Proto(h http.Header) (proto string) {
 }
 
 // Legacy approach to determining forwarding information.
-func Legacy() Determiner {
-	return xffDeterminer{}
+func Legacy() Strategy {
+	return xffStrategy{}
 }
 
-// rfc7239Determiner uses the RFC 7239 Forwarded header to determine forwarding
+// rfc7239Strategy uses the RFC 7239 Forwarded header to determine forwarding
 // information.
-type rfc7239Determiner struct{}
+type rfc7239Strategy struct{}
 
 const headerForwarded = "Forwarded"
 
@@ -136,38 +136,38 @@ func parseForwarded(h http.Header) (p parsedHeader) {
 	return
 }
 
-func (rfc7239Determiner) By(h http.Header) (by string) {
+func (rfc7239Strategy) By(h http.Header) (by string) {
 	if ph := parseForwarded(h); len(ph.bys) > 0 {
 		by = ph.bys[0]
 	}
 	return
 }
 
-func (rfc7239Determiner) For(h http.Header) (f string) {
+func (rfc7239Strategy) For(h http.Header) (f string) {
 	if ph := parseForwarded(h); len(ph.fors) > 0 {
 		f = ph.fors[0]
 	}
 	return
 }
 
-func (rfc7239Determiner) Host(h http.Header) string {
+func (rfc7239Strategy) Host(h http.Header) string {
 	return parseForwarded(h).host
 }
 
-func (rfc7239Determiner) Proto(h http.Header) string {
+func (rfc7239Strategy) Proto(h http.Header) string {
 	return parseForwarded(h).proto
 }
 
 // RFC7239 approach to determining forwarding information.
-func RFC7239() Determiner {
-	return rfc7239Determiner{}
+func RFC7239() Strategy {
+	return rfc7239Strategy{}
 }
 
-type orderedDeterminer struct {
-	ds []Determiner
+type orderedStrategy struct {
+	ds []Strategy
 }
 
-func (d orderedDeterminer) By(h http.Header) string {
+func (d orderedStrategy) By(h http.Header) string {
 	for _, sub := range d.ds {
 		if by := sub.By(h); by != "" {
 			return by
@@ -176,7 +176,7 @@ func (d orderedDeterminer) By(h http.Header) string {
 	return ""
 }
 
-func (d orderedDeterminer) For(h http.Header) (f string) {
+func (d orderedStrategy) For(h http.Header) (f string) {
 	for _, sub := range d.ds {
 		if f := sub.For(h); f != "" {
 			return f
@@ -185,7 +185,7 @@ func (d orderedDeterminer) For(h http.Header) (f string) {
 	return ""
 }
 
-func (d orderedDeterminer) Host(h http.Header) string {
+func (d orderedStrategy) Host(h http.Header) string {
 	for _, sub := range d.ds {
 		if f := sub.Host(h); f != "" {
 			return f
@@ -194,7 +194,7 @@ func (d orderedDeterminer) Host(h http.Header) string {
 	return ""
 }
 
-func (d orderedDeterminer) Proto(h http.Header) string {
+func (d orderedStrategy) Proto(h http.Header) string {
 	for _, sub := range d.ds {
 		if f := sub.Proto(h); f != "" {
 			return f
@@ -204,15 +204,15 @@ func (d orderedDeterminer) Proto(h http.Header) string {
 }
 
 // Ordered approach to determining forwarding information, which will try the
-// Determiners in the provided order until one is successful or all fail.
-func Ordered(ds ...Determiner) Determiner {
-	return orderedDeterminer{
+// Strategys in the provided order until one is successful or all fail.
+func Ordered(ds ...Strategy) Strategy {
+	return orderedStrategy{
 		ds: ds,
 	}
 }
 
 // DefaultStrategy for determining forwarding information is to look for RFC
 // 7239 headers, and fall back to legacy X-Forwarded-$X headers if not found.
-func DefaultStrategy() Determiner {
+func DefaultStrategy() Strategy {
 	return Ordered(RFC7239(), Legacy())
 }
