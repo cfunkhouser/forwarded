@@ -5,6 +5,9 @@ Intended to be used in HTTP server middleware. By default, the package-level
 functions look for RFC 7239 `Forwarded` headers, and then for
 `X-Forwarded-{For,By,Host,Proto}` headers. If both exist, the first is trusted.
 
+[![CircleCI](https://img.shields.io/circleci/build/github/cfunkhouser/forwarded/main)](https://app.circleci.com/pipelines/github/cfunkhouser/forwarded)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/cfunkhouser/forwarded)
+[![Go Reference](https://pkg.go.dev/badge/github.com/cfunkhouser/forwarded.svg)](https://pkg.go.dev/github.com/cfunkhouser/forwarded)
 ## Usage
 
 You can use the package-level functions directly as a convenience. They use the
